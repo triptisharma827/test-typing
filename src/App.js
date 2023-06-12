@@ -1,12 +1,17 @@
 import React from 'react';
-import TypingBox from './components/TypingBox';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './pages/home';
+import TestResult from './pages/testResult';
+
 
 const App = () => {
   return (
-    <div>
-      <h1>Touch Typing Application</h1>
-      <TypingBox />
-    </div>
+    <Router>
+      <Routes>
+        <Route path='/' element={<Home/>}/>
+        <Route path='/result' element={<TestResult/>}/>
+      </Routes>
+    </Router>
   );
 };
 

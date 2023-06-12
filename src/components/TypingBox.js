@@ -1,24 +1,61 @@
-import React from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const TypingBox = ({ typedKeys, nextKeys }) => {
+function TypingBox() {
+  const [keyPressCount, setKeyPressCount] = useState(0);
+  const [matchCount, setMatchCount] = useState(0);
+  const [enteredLetter, setEnteredLetter] = useState('');
+  const [remainingTime, setRemainingTime] = useState(300);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      alert('Time is up. Moving on to Results.');
+      const queryParams = new URLSearchParams(location.search);
+      queryParams.set('keyPressCount', keyPressCount.toString());
+      queryParams.set('matchCount', matchCount.toString());
+      navigate(`/result?${queryParams.toString()}`);
+    }, remainingTime * 1000);
+
+    return () => clearTimeout(timer);
+  }, [location, keyPressCount, matchCount, navigate, remainingTime]);
+
+  useEffect(() => {
+    if (remainingTime > 0) {
+      const interval = setInterval(() => {
+        setRemainingTime((prevTime) => prevTime - 1);
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  function handleKeyPress(event) {
+    const pressedLetter = event.key;
+    setEnteredLetter(pressedLetter.toLowerCase());
+
+    const redLetter = document.querySelector('.active')?.textContent;
+    const isMatched = pressedLetter.toLowerCase() === redLetter;
+
+    setKeyPressCount((prevCount) => prevCount + 1);
+
+    if (isMatched) {
+      setMatchCount((prevCount) => prevCount + 1);
+    }
+  }
+
   return (
-    <div>
-      <div>Next keys: {nextKeys}</div>
-      <input
-        type="text"
-        value={typedKeys}
-        onChange={(e) => {
-          // Dispatch action to update typedKeys in Redux store
-        }}
-      />
+    <div className='parent-div'>
+      <div><h2 className='headingSmall'>Remaining Time: {remainingTime} seconds</h2></div>
+      <div>
+        <form>
+          <input id="keyInput" type="text" onKeyDown={handleKeyPress} placeholder='Press the Keys you see in the box...' />
+        </form>
+      </div>
     </div>
   );
 };
 
-const mapStateToProps = (state) => ({
-  typedKeys: state.typedKeys,
-  nextKeys: state.nextKeys,
-});
-
-export default  connect(mapStateToProps)(TypingBox);
+export default TypingBox;
